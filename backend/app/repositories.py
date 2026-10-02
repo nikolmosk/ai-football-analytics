@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Competition, Match, OddsSnapshot, Season, Team
+from app.models import Competition, Match, OddsSnapshot, Season, Team, TeamMatchStats
 from app.providers.base import EventSnapshot
 
 
@@ -127,3 +127,61 @@ async def persist_events(session: AsyncSession, events: list[EventSnapshot], *, 
         count += 1
     await session.commit()
     return count
+
+
+async def persist_team_match_stats(
+    session: AsyncSession,
+    *,
+    match_id: int,
+    team_id: int,
+    source: str,
+    observed_at: datetime,
+    retrieved_at: datetime,
+    goals_for: int | None = None,
+    goals_against: int | None = None,
+    shots: int | None = None,
+    shots_on_target: int | None = None,
+    possession_pct: float | None = None,
+    corners: int | None = None,
+    fouls: int | None = None,
+    yellow_cards: int | None = None,
+    red_cards: int | None = None,
+    xg: float | None = None,
+    status: str = "VERIFIED",
+    source_url: str | None = None,
+    raw: dict | None = None,
+) -> TeamMatchStats:
+    if await session.get(Match, match_id) is None:
+        raise ValueError("Match not found")
+    if await session.get(Team, team_id) is None:
+        raise ValueError("Team not found")
+    existing = (await session.execute(select(TeamMatchStats).where(
+        TeamMatchStats.match_id == match_id,
+        TeamMatchStats.team_id == team_id,
+        TeamMatchStats.source == source,
+    ))).scalar_one_or_none()
+    values = dict(
+        observed_at=observed_at,
+        retrieved_at=retrieved_at,
+        goals_for=goals_for,
+        goals_against=goals_against,
+        shots=shots,
+        shots_on_target=shots_on_target,
+        possession_pct=possession_pct,
+        corners=corners,
+        fouls=fouls,
+        yellow_cards=yellow_cards,
+        red_cards=red_cards,
+        xg=xg,
+        status=status,
+        source_url=source_url,
+        raw=raw or {},
+    )
+    if existing is None:
+        existing = TeamMatchStats(match_id=match_id, team_id=team_id, source=source, **values)
+        session.add(existing)
+    else:
+        for key, value in values.items():
+            setattr(existing, key, value)
+    await session.flush()
+    return existing
