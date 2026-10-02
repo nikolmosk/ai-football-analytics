@@ -1,24 +1,25 @@
 # Changelog
 
-## v0.5.0 — Scheduled Odds Ingestion
+## v0.6.0 — Team Match Stats & Form Foundation
 
 ### Added
-- Dedicated server-side odds ingestion service.
-- APScheduler interval job for automatic odds refresh.
-- Redis distributed lock so multiple API instances do not run the same sync simultaneously.
-- Redis health status in `/health`.
-- Configurable `ODDS_SYNC_INTERVAL_SECONDS` with a 30-second safety floor.
-- Configurable `REDIS_URL`.
-- Snapshot-level deduplication by match, bookmaker, market, selection, point and observation timestamp.
-
-### API
-- `POST /api/v1/data/football/sync` now uses the shared ingestion service.
-- `/health` reports provider and Redis availability.
+- Normalized `team_match_stats` PostgreSQL table with provenance, timestamps and nullable provider metrics.
+- Idempotent repository persistence for team-match statistics.
+- `GET /api/v1/matches/{id}/stats` for stored match statistics.
+- `GET /api/v1/teams/{id}/form` with last-N form and all/home/away split.
+- Optional `before_match_id` cutoff so form excludes the target match and all later matches.
+- Form aggregation for W/D/L, points, goals, xG, shots, shots on target, possession and corners when source data exists.
+- Tests for latest-N selection and missing-score handling.
 
 ### Data integrity
-- Repeated provider observations are not inserted twice.
-- Scheduler failures do not invent fallback odds.
-- Provider credentials remain server-side.
+- No statistics are generated when a provider does not supply them.
+- Missing values remain NULL rather than being estimated or invented.
+- Form only consumes stored completed matches before the requested cutoff.
+- xG remains unavailable until a verified stats provider supplies it.
+
+### Provider status
+- The Odds API remains the odds/event provider; it is not treated as a historical team-statistics provider.
+- v0.6 establishes the normalized stats contract so a verified football statistics adapter can be added without changing the mobile API.
 
 ### Next
-v0.6.0: normalized team-match statistics and form history.
+v0.7.0: verified football statistics ingestion adapter + automatic completed-match stats synchronization.
