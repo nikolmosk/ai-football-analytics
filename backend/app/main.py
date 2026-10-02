@@ -9,11 +9,12 @@ from app.analytics.football_poisson import outcome_probabilities
 from app.analytics.markets import devig_proportional, edge_percentage_points, expected_value_per_unit, fair_decimal_odds
 from app.config import get_odds_api_base_url, get_odds_api_key, get_odds_api_markets, get_odds_api_regions, get_odds_api_sport, get_redis_url
 from app.db import SessionLocal
-from app.models import Match, OddsSnapshot
+from app.models import Match, OddsSnapshot, Team, TeamMatchStats
 from app.providers.base import ProviderError
 from app.providers.registry import ProviderRegistry
 from app.providers.the_odds_api import TheOddsAPIProvider
 from app.repositories import persist_events\nfrom app.ingestion import safe_sync_odds\nfrom app.scheduler import configure_scheduler, scheduler\nfrom redis.asyncio import Redis
+from app.form import FormRecord, build_form, cutoff_for_match
 
 provider_registry = ProviderRegistry()
 odds_provider = TheOddsAPIProvider(
@@ -22,7 +23,7 @@ odds_provider = TheOddsAPIProvider(
 )
 provider_registry.register("football", odds_provider)
 
-app = FastAPI(title="AI Football Analytics API", version="0.4.0",
+app = FastAPI(title="AI Football Analytics API", version="0.6.0",
               description="Football analytics backend with normalized match and odds ingestion.")
 
 
@@ -139,6 +140,90 @@ def _odds_dto(row: OddsSnapshot) -> dict[str, object]:
     }
 
 
+
+
+@app.get("/api/v1/matches/{match_id}/stats")
+async def get_match_stats(match_id: int, session: AsyncSession = Depends(db_session)) -> dict[str, object]:
+    if await session.get(Match, match_id) is None:
+        raise HTTPException(status_code=404, detail="Match not found")
+    rows = (await session.execute(
+        select(TeamMatchStats).where(TeamMatchStats.match_id == match_id).order_by(TeamMatchStats.team_id)
+    )).scalars().all()
+    return {"items": [_stats_dto(row) for row in rows], "count": len(rows), "data_status": "VERIFIED" if rows else "DATA_INSUFFICIENT"}
+
+
+@app.get("/api/v1/teams/{team_id}/form")
+async def get_team_form(
+    team_id: int,
+    limit: int = Query(default=5, ge=1, le=20),
+    venue: str = Query(default="all", pattern="^(all|home|away)$"),
+    before_match_id: int | None = Query(default=None, ge=1),
+    session: AsyncSession = Depends(db_session),
+) -> dict[str, object]:
+    team = await session.get(Team, team_id)
+    if team is None:
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    cutoff = datetime.now(timezone.utc)
+    if before_match_id is not None:
+        target = await session.get(Match, before_match_id)
+        if target is None:
+            raise HTTPException(status_code=404, detail="Target match not found")
+        cutoff = cutoff_for_match(target.start_time_utc)
+
+    rows = (await session.execute(
+        select(TeamMatchStats, Match)
+        .join(Match, TeamMatchStats.match_id == Match.id)
+        .where(
+            TeamMatchStats.team_id == team_id,
+            Match.start_time_utc < cutoff,
+            Match.status.in_(["completed", "complete", "finished", "ft"]),
+        )
+        .order_by(Match.start_time_utc.desc())
+    )).all()
+
+    records: list[FormRecord] = []
+    for stats, match in rows:
+        is_home = match.home_team_id == team_id
+        if venue != "all" and ((venue == "home") != is_home):
+            continue
+        opponent_id = match.away_team_id if is_home else match.home_team_id
+        opponent = await session.get(Team, opponent_id)
+        records.append(FormRecord(
+            match_id=match.id, team_id=team_id, opponent_team_id=opponent_id,
+            opponent_name=opponent.name if opponent else str(opponent_id),
+            venue="home" if is_home else "away", start_time_utc=match.start_time_utc,
+            goals_for=stats.goals_for, goals_against=stats.goals_against,
+            shots=stats.shots, shots_on_target=stats.shots_on_target,
+            possession_pct=stats.possession_pct, corners=stats.corners,
+            fouls=stats.fouls, yellow_cards=stats.yellow_cards,
+            red_cards=stats.red_cards, xg=stats.xg,
+            source=stats.source, status=stats.status,
+        ))
+
+    form = build_form(records, limit=limit)
+    form.update({
+        "team_id": team_id,
+        "venue": venue,
+        "before_match_id": before_match_id,
+        "cutoff_utc": cutoff.isoformat(),
+        "data_note": "Only stored provider observations are included; missing metrics are not inferred.",
+    })
+    return form
+
+
+def _stats_dto(row: TeamMatchStats) -> dict[str, object]:
+    return {
+        "id": row.id, "match_id": row.match_id, "team_id": row.team_id,
+        "source": row.source, "status": row.status,
+        "observed_at": row.observed_at.isoformat(), "retrieved_at": row.retrieved_at.isoformat(),
+        "goals_for": row.goals_for, "goals_against": row.goals_against,
+        "shots": row.shots, "shots_on_target": row.shots_on_target,
+        "possession_pct": row.possession_pct, "corners": row.corners,
+        "fouls": row.fouls, "yellow_cards": row.yellow_cards, "red_cards": row.red_cards,
+        "xg": row.xg, "source_url": row.source_url,
+    }
+
 @app.get("/health")
 async def health() -> dict[str, str]:
     provider = await odds_provider.healthcheck()
@@ -147,7 +232,7 @@ async def health() -> dict[str, str]:
 
 @app.get("/")
 def root() -> dict[str, str]:
-    return {"name": "AI Football Analytics API", "version": "0.5.0", "status": "development", "data_status": "SOURCE_GATED"}
+    return {"name": "AI Football Analytics API", "version": "0.6.0", "status": "development", "data_status": "SOURCE_GATED"}
 
 
 @app.post("/api/v1/analytics/probabilities/validate")
