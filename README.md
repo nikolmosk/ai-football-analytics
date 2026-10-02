@@ -53,3 +53,17 @@ The starter exposes a health endpoint and deterministic mathematical helpers onl
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+
+## Sports prompt suite
+
+The shared system prompt and sport-specific prompt files live in [`docs/prompts/`](docs/prompts/README.md). They cover CS2, Dota 2, major club football, NHL, and NBA/EuroLeague. They define strict source provenance, data-quality gates, market settlement checks, probability/EV semantics, and a structured JSON output contract.
+
+## Analytics API (early alpha)
+
+- `POST /api/v1/analytics/football/poisson` — derive regulation 1X2 and selected totals/BTTS probabilities from **caller-supplied expected goals**.
+- `POST /api/v1/markets/binary` — fair odds, binary-market EV and optional probability edge.
+- `POST /api/v1/markets/devig` — proportional de-vig for mutually exclusive outcomes.
+- `POST /api/v1/analytics/probabilities/validate` — validate a 1X2 probability sum.
+
+These endpoints are arithmetic/model primitives, not live predictions. They do not fetch real fixtures, statistics, or bookmaker prices. Outputs are marked unverified and the Poisson model is not calibrated. See [the roadmap](docs/roadmap.md) for the next milestones.
