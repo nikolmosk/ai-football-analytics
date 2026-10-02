@@ -39,6 +39,7 @@ class Team(Base):
     name: Mapped[str] = mapped_column(String(200))
     home_matches: Mapped[list["Match"]] = relationship(back_populates="home_team", foreign_keys="Match.home_team_id")
     away_matches: Mapped[list["Match"]] = relationship(back_populates="away_team", foreign_keys="Match.away_team_id")
+    match_stats: Mapped[list["TeamMatchStats"]] = relationship(back_populates="team")
 
 
 class Match(Base):
@@ -59,6 +60,7 @@ class Match(Base):
     home_team: Mapped[Team] = relationship(foreign_keys=[home_team_id], back_populates="home_matches")
     away_team: Mapped[Team] = relationship(foreign_keys=[away_team_id], back_populates="away_matches")
     odds: Mapped[list["OddsSnapshot"]] = relationship(back_populates="match", cascade="all, delete-orphan")
+    team_stats: Mapped[list["TeamMatchStats"]] = relationship(back_populates="match", cascade="all, delete-orphan")
 
 
 class OddsSnapshot(Base):
@@ -80,3 +82,31 @@ class OddsSnapshot(Base):
     source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     raw: Mapped[dict] = mapped_column(JSONB, default=dict)
     match: Mapped[Match] = relationship(back_populates="odds")
+
+
+class TeamMatchStats(Base):
+    __tablename__ = "team_match_stats"
+    __table_args__ = (
+        UniqueConstraint("match_id", "team_id", "source", name="uq_team_match_stats_source"),
+    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"), index=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), index=True)
+    source: Mapped[str] = mapped_column(String(120), index=True)
+    status: Mapped[str] = mapped_column(String(40), default="VERIFIED", index=True)
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    retrieved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    goals_for: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    goals_against: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shots: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shots_on_target: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    possession_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
+    corners: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fouls: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    yellow_cards: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    red_cards: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    xg: Mapped[float | None] = mapped_column(Float, nullable=True)
+    source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    raw: Mapped[dict] = mapped_column(JSONB, default=dict)
+    match: Mapped[Match] = relationship(back_populates="team_stats")
+    team: Mapped[Team] = relationship(back_populates="match_stats")
