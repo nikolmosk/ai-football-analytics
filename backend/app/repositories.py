@@ -103,7 +103,7 @@ async def persist_event(
             if not isinstance(price, (int, float)) or price <= 1:
                 continue
             point = outcome.get("point")
-            session.add(OddsSnapshot(
+            existing = (await session.execute(select(OddsSnapshot.id).where(\n                OddsSnapshot.match_id == match.id,\n                OddsSnapshot.bookmaker_key == str(market.get("bookmaker_key") or market.get("bookmaker") or "unknown"),\n                OddsSnapshot.market_key == str(market.get("market") or "unknown"),\n                OddsSnapshot.selection == str(outcome.get("name") or ""),\n                OddsSnapshot.point_key == _point_key(point),\n                OddsSnapshot.observed_at == observed,\n            ))).scalar_one_or_none()\n            if existing is not None:\n                continue\n            session.add(OddsSnapshot(
                 match_id=match.id,
                 bookmaker_key=str(market.get("bookmaker_key") or market.get("bookmaker") or "unknown"),
                 bookmaker_name=str(market.get("bookmaker") or "unknown"),
