@@ -1,5 +1,5 @@
 """FastAPI application for AI Football Analytics."""
-from datetime import datetime, timezone
+from contextlib import asynccontextmanager\nfrom datetime import datetime, timezone
 from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -7,13 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.analytics.football_poisson import outcome_probabilities
 from app.analytics.markets import devig_proportional, edge_percentage_points, expected_value_per_unit, fair_decimal_odds
-from app.config import get_odds_api_base_url, get_odds_api_key, get_odds_api_markets, get_odds_api_regions, get_odds_api_sport
+from app.config import get_odds_api_base_url, get_odds_api_key, get_odds_api_markets, get_odds_api_regions, get_odds_api_sport, get_redis_url
 from app.db import SessionLocal
 from app.models import Match, OddsSnapshot
 from app.providers.base import ProviderError
 from app.providers.registry import ProviderRegistry
 from app.providers.the_odds_api import TheOddsAPIProvider
-from app.repositories import persist_events
+from app.repositories import persist_events\nfrom app.ingestion import safe_sync_odds\nfrom app.scheduler import configure_scheduler, scheduler\nfrom redis.asyncio import Redis
 
 provider_registry = ProviderRegistry()
 odds_provider = TheOddsAPIProvider(
@@ -147,7 +147,7 @@ async def health() -> dict[str, str]:
 
 @app.get("/")
 def root() -> dict[str, str]:
-    return {"name": "AI Football Analytics API", "version": "0.4.0", "status": "development", "data_status": "SOURCE_GATED"}
+    return {"name": "AI Football Analytics API", "version": "0.5.0", "status": "development", "data_status": "SOURCE_GATED"}
 
 
 @app.post("/api/v1/analytics/probabilities/validate")
