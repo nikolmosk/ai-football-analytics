@@ -7,12 +7,15 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
 from app.analytics.football_poisson import outcome_probabilities
+from app.providers.registry import ProviderRegistry
 from app.analytics.markets import (
     devig_proportional,
     edge_percentage_points,
     expected_value_per_unit,
     fair_decimal_odds,
 )
+
+provider_registry = ProviderRegistry()
 
 app = FastAPI(
     title="AI Football Analytics API",
@@ -44,6 +47,12 @@ class BinaryMarketRequest(BaseModel):
 
 class DevigRequest(BaseModel):
     decimal_odds: list[float] = Field(min_length=2)
+
+
+@app.get("/api/v1/data/providers")
+def data_provider_status() -> dict[str, object]:
+    """Report configured adapters without implying that live data exists."""
+    return provider_registry.status()
 
 
 @app.get("/health")
