@@ -1,24 +1,19 @@
 # Changelog
 
-All notable changes to this project are documented here.
-
-## v0.2.0 — Live Odds Foundation
+## v0.3.0 — PostgreSQL Persistence
 
 ### Added
-- Server-side The Odds API v4 provider adapter.
-- Normalized bookmaker and market payloads using the existing `EventSnapshot` contract.
-- Provider healthcheck without exposing API credentials.
-- Environment-based Odds API configuration.
-- Explicit `NOT_CONFIGURED`, `REACHABLE`, and `UNVERIFIED` provider states.
-- Example environment file containing no secrets.
+- SQLAlchemy async database configuration.
+- PostgreSQL models for competitions, teams, matches and odds snapshots.
+- Alembic configuration and initial migration.
+- Persistence repository for normalized The Odds API events.
+- Odds are stored as observations, preserving line history.
 
-### Changed
-- The backend now has a concrete odds-provider implementation while keeping the provider abstraction intact.
-
-### Safety / data quality
-- API credentials are never returned by the backend.
-- Live data is not labelled verified until the upstream request succeeds.
-- No betting action or wager placement is implemented.
+### Data quality
+- Provider event IDs remain linked to their source provider.
+- Match and odds records retain retrieval and observation timestamps.
+- Raw normalized market data is retained for auditability.
+- No credentials or live secrets are stored in the repository.
 
 ### Next
-- v0.3.0: PostgreSQL models, migrations, matches and odds persistence.
+v0.4.0: competitions, seasons, teams and normalized match ingestion.
