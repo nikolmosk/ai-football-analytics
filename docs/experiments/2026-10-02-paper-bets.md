@@ -3,10 +3,12 @@
 ## Rules
 
 - This is a **virtual paper-bet experiment only**. No money has been wagered and no bookmaker account was accessed.
-- Stake: **400 ₽ per selection**. 25 selections = **10,000 ₽ virtual turnover**.
+- Stake: **400 ₽ per selection**. 25 listed selections = **10,000 ₽ nominal virtual turnover**, but selections whose start time preceded this snapshot must be voided and excluded from settled turnover.
 - Eligible decimal odds: **strictly greater than 1.30 and strictly less than 3.00**.
 - Odds are snapshots from public pages checked on 2 October 2026. They can move, differ by region, or disappear. This is not a claim that every line is available to the user.
 - Important model limitation: the app's live data providers and calibrated multi-sport models are not connected yet. These are **initial paper selections**, not validated model edges. No model probabilities or positive-EV claims are fabricated.
+- **Timing integrity:** some CS2 and Dota listings were shown for 2 October, and their start time may have passed by the time this file was written. Rows 1–10 are provisional only: verify the actual scheduled start and result history before counting them. If a match or map had already started before the snapshot, mark it **VOID / NOT ENTERED**, not a loss or win. Do not backdate a paper bet.
+- The men’s major football leagues have limited fixtures around the international window, so the five club-football rows use top-flight women’s club competitions instead. This is a deliberate scope adjustment, not men’s football.
 - Results: settle only after the event is final. At the 1–2 day check, some later EuroLeague selections may still be pending. Do not mark them as losses or wins early.
 - Settlement convention: ordinary match-winner markets settle on the event's official winner; handicap/total markets use the market's listed line. For NBA preseason, lineup/rotation uncertainty is especially high.
 
@@ -21,20 +23,20 @@
 
 ## 25-selection tracker
 
-All stakes are 400 ₽. “Potential return” means stake × decimal odds and includes the returned stake. Profit if won = potential return − 400 ₽.
+All stakes are 400 ₽. “Potential return” means stake × decimal odds and includes the returned stake. Profit if won = potential return − 400 ₽. Rows 1–10 require a timing check before they can count as valid entries.
 
 | # | Discipline | Event | Selection / market | Odds | Stake | Potential return | Source / notes | Result |
 |---:|---|---|---|---:|---:|---:|---|---|
-| 1 | CS2 | Astralis vs FaZe | FaZe win | 1.78 | 400 ₽ | 712 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Pending |
-| 2 | CS2 | B8 vs fnatic | fnatic win | 2.70 | 400 ₽ | 1,080 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Pending |
-| 3 | CS2 | Luminosity Gaming vs BIG | Luminosity win | 1.72 | 400 ₽ | 688 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Pending |
-| 4 | CS2 | Luminosity Gaming vs BIG | BIG win | 2.00 | 400 ₽ | 800 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Pending |
-| 5 | CS2 | Alliance vs Nemiga | Alliance win | 2.80 | 400 ₽ | 1,120 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Pending |
-| 6 | Dota 2 | LGD Gaming vs Xtreme Gaming | LGD match winner | 1.42 | 400 ₽ | 568 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Pending |
-| 7 | Dota 2 | LGD Gaming vs Xtreme Gaming | Xtreme match winner | 2.70 | 400 ₽ | 1,080 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Pending |
-| 8 | Dota 2 | OG vs BetBoom Team | OG match winner | 2.50 | 400 ₽ | 1,000 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Pending |
-| 9 | Dota 2 | OG vs BetBoom Team | BetBoom match winner | 1.48 | 400 ₽ | 592 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Pending |
-| 10 | Dota 2 | Xtreme Gaming vs LGD Gaming | Xtreme wins map 1 | 2.14 | 400 ₽ | 856 ₽ | [Olimp market](https://www.olimp.bet/line/kibersport-112/dota-2-blast-slam-8339904/xtreme-gaming-lgd-gaming-02-10-2026-85962191) | Pending |
+| 1 | CS2 | Astralis vs FaZe | FaZe win | 1.78 | 400 ₽ | 712 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Verify start time; void if already started |
+| 2 | CS2 | B8 vs fnatic | fnatic win | 2.70 | 400 ₽ | 1,080 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Verify start time; void if already started |
+| 3 | CS2 | Luminosity Gaming vs BIG | Luminosity win | 1.72 | 400 ₽ | 688 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Verify start time; void if already started |
+| 4 | CS2 | Luminosity Gaming vs BIG | BIG win | 2.00 | 400 ₽ | 800 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Verify start time; void if already started |
+| 5 | CS2 | Alliance vs Nemiga | Alliance win | 2.80 | 400 ₽ | 1,120 ₽ | [Stake CS2 lines](https://stake.com/sports/counter-strike) | Verify start time; void if already started |
+| 6 | Dota 2 | LGD Gaming vs Xtreme Gaming | LGD match winner | 1.42 | 400 ₽ | 568 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Verify start time; void if already started |
+| 7 | Dota 2 | LGD Gaming vs Xtreme Gaming | Xtreme match winner | 2.70 | 400 ₽ | 1,080 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Verify start time; void if already started |
+| 8 | Dota 2 | OG vs BetBoom Team | OG match winner | 2.50 | 400 ₽ | 1,000 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Verify start time; void if already started |
+| 9 | Dota 2 | OG vs BetBoom Team | BetBoom match winner | 1.48 | 400 ₽ | 592 ₽ | [Stake BLAST Slam VIII](https://stake.bet/sports/dota-2/international-2/blast-slam-viii-t1) | Verify start time; void if already started |
+| 10 | Dota 2 | Xtreme Gaming vs LGD Gaming | Xtreme wins map 1 | 2.14 | 400 ₽ | 856 ₽ | [Olimp market](https://www.olimp.bet/line/kibersport-112/dota-2-blast-slam-8339904/xtreme-gaming-lgd-gaming-02-10-2026-85962191) | Verify start time; void if already started |
 | 11 | Club football | Manchester United Women vs Liverpool Women | Man Utd Women win | 2.05 | 400 ₽ | 820 ₽ | [Oddschecker women's coupon](https://www.oddschecker.com/football/womens-coupon), 21/20 converted to decimal | Pending |
 | 12 | Club football | RB Leipzig Women vs Mainz 05 Women | RB Leipzig Women win | 1.52 | 400 ₽ | 608 ₽ | [Oddschecker women's coupon](https://www.oddschecker.com/football/womens-coupon), 11/21 converted to decimal | Pending |
 | 13 | Club football | Aston Villa Women vs Crystal Palace Women | Aston Villa Women win | 1.75 | 400 ₽ | 700 ₽ | [Oddschecker women's coupon](https://www.oddschecker.com/football/womens-coupon), 3/4 converted to decimal | Pending |
@@ -53,16 +55,17 @@ All stakes are 400 ₽. “Potential return” means stake × decimal odds and i
 
 ## Accounting
 
-- Total paper stake: **10,000 ₽**
-- Selections: **25**
+- Total listed stake: **10,000 ₽**
+- Selections listed: **25**
 - Stake per selection: **400 ₽**
 - Eligible odds range: **1.30 < odds < 3.00**
 - The EuroLeague picks above are scheduled for 7–8 October, so they will **not** settle in the first 1–2 days. They are included to cover both basketball leagues without pretending that already-started 2 October games were still available pre-match.
+- After timing verification, subtract any void / not-entered rows from actual experimental turnover. Do not treat those rows as losses.
 - Before treating any entry as a model prediction, run the matching prompt with verified recent form, roster/lineup status, schedule/rest, market odds and source timestamps. The current app does not yet have the complete live multi-sport data needed to produce defensible model probabilities.
 
 ## Review checklist for the follow-up
 
-For each selection, record:
+For each valid selection, record:
 1. Official result and settlement status.
 2. Final odds snapshot if available; note any line movement from the listed price.
 3. Win/loss/push/void.
@@ -70,4 +73,4 @@ For each selection, record:
 5. Net P/L = return − 400.
 6. Total P/L and ROI = total net P/L ÷ settled stakes.
 
-Do not score unfinished events. At the first review, report settled and pending selections separately.
+Do not score unfinished events. At the first review, report settled, pending, and void/not-entered selections separately.
