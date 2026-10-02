@@ -30,7 +30,7 @@ def upgrade():
 
     op.add_column("odds_snapshots", sa.Column("point_key", sa.String(64), nullable=True))
     op.execute("UPDATE odds_snapshots SET point_key = CASE WHEN point IS NULL THEN 'NULL' ELSE to_char(point, 'FM999999990.000000') END")
-    op.alter_column("odds_snapshots", "point_key", nullable=False, server_default="NULL")
+    op.alter_column("odds_snapshots", "point_key", nullable=False, server_default=sa.text("'NULL'"))
     op.drop_constraint("uq_odds_observation", "odds_snapshots", type_="unique")
     op.create_unique_constraint(
         "uq_odds_observation",
