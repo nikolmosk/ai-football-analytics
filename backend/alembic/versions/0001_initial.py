@@ -1,0 +1,11 @@
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+revision="0001_initial"; down_revision=None; branch_labels=None; depends_on=None
+def upgrade():
+ op.create_table("competitions",sa.Column("id",sa.Integer(),primary_key=True),sa.Column("provider_key",sa.String(120),nullable=False),sa.Column("name",sa.String(200),nullable=False),sa.Column("sport",sa.String(32),nullable=False),sa.UniqueConstraint("provider_key"))
+ op.create_table("teams",sa.Column("id",sa.Integer(),primary_key=True),sa.Column("provider_key",sa.String(160),nullable=False),sa.Column("name",sa.String(200),nullable=False),sa.UniqueConstraint("provider_key"))
+ op.create_table("matches",sa.Column("id",sa.Integer(),primary_key=True),sa.Column("provider",sa.String(80),nullable=False),sa.Column("provider_event_id",sa.String(160),nullable=False),sa.Column("competition_id",sa.Integer(),sa.ForeignKey("competitions.id"),nullable=False),sa.Column("home_team_id",sa.Integer(),sa.ForeignKey("teams.id"),nullable=False),sa.Column("away_team_id",sa.Integer(),sa.ForeignKey("teams.id"),nullable=False),sa.Column("start_time_utc",sa.DateTime(timezone=True),nullable=False),sa.Column("status",sa.String(40),nullable=False),sa.Column("retrieved_at",sa.DateTime(timezone=True),nullable=False),sa.UniqueConstraint("provider","provider_event_id",name="uq_match_provider_event"))
+ op.create_table("odds_snapshots",sa.Column("id",sa.Integer(),primary_key=True),sa.Column("match_id",sa.Integer(),sa.ForeignKey("matches.id"),nullable=False),sa.Column("bookmaker_key",sa.String(120),nullable=False),sa.Column("bookmaker_name",sa.String(200),nullable=False),sa.Column("market_key",sa.String(80),nullable=False),sa.Column("selection",sa.String(200),nullable=False),sa.Column("point",sa.Float(),nullable=True),sa.Column("decimal_odds",sa.Float(),nullable=False),sa.Column("observed_at",sa.DateTime(timezone=True),nullable=False),sa.Column("retrieved_at",sa.DateTime(timezone=True),nullable=False),sa.Column("source_url",sa.String(500)),sa.Column("raw",postgresql.JSONB(),nullable=False),sa.UniqueConstraint("match_id","bookmaker_key","market_key","selection","point","observed_at",name="uq_odds_observation"))
+def downgrade():
+ op.drop_table("odds_snapshots"); op.drop_table("matches"); op.drop_table("teams"); op.drop_table("competitions")
