@@ -114,7 +114,7 @@ async def persist_event(
                 decimal_odds=float(price),
                 observed_at=observed,
                 retrieved_at=event.retrieved_at,
-                source_url=event.markets[0].get("source_url") if event.markets else None,
+                source_url=event.competition.source.url if event.competition.source else None,
                 raw={"outcome": outcome, "market": market},
             ))
     return match
