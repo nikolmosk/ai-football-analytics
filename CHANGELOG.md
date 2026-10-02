@@ -1,19 +1,27 @@
 # Changelog
 
-## v0.3.0 — PostgreSQL Persistence
+## v0.4.0 — Normalized Match Ingestion
 
 ### Added
-- SQLAlchemy async database configuration.
-- PostgreSQL models for competitions, teams, matches and odds snapshots.
-- Alembic configuration and initial migration.
-- Persistence repository for normalized The Odds API events.
-- Odds are stored as observations, preserving line history.
+- The Odds API event-list ingestion through the football odds feed.
+- PostgreSQL `seasons` entity linked to competitions and matches.
+- Normalized match list/detail endpoints with pagination and status filtering.
+- Match odds history endpoint with observation timestamps.
+- `POST /api/v1/data/football/sync` to ingest the current provider feed server-side.
+- Provider source URLs and retrieval timestamps retained for auditability.
+- Automated provider normalization tests using `httpx.MockTransport`.
 
 ### Data quality
-- Provider event IDs remain linked to their source provider.
-- Match and odds records retain retrieval and observation timestamps.
-- Raw normalized market data is retained for auditability.
-- No credentials or live secrets are stored in the repository.
+- API credentials remain server-side in environment configuration.
+- The provider event ID remains the stable external identity for matches.
+- Season records use an explicit `current` provider-feed bucket because The Odds API event payload does not supply a verified season identifier in this adapter; no invented competition season label is exposed.
+- Odds point values are normalized into a deterministic `point_key`, avoiding PostgreSQL NULL uniqueness gaps.
+
+### API
+- `GET /api/v1/matches`
+- `GET /api/v1/matches/{id}`
+- `GET /api/v1/matches/{id}/odds`
+- `POST /api/v1/data/football/sync`
 
 ### Next
-v0.4.0: competitions, seasons, teams and normalized match ingestion.
+v0.5.0: scheduled odds ingestion, snapshot deduplication and background jobs.
